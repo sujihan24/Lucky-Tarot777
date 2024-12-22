@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Tarot Card</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            position: relative;
+            overflow: hidden; /* 네잎클로버가 화면 밖으로 튀지 않도록 설정 */
+            transition: background-color 1s ease;
+            cursor: url('small.png'), auto; /* 네잎클로버 커서 이미지 */
+        }
+
+        .container {
+            width: 220px;
+            height: 310px;
+            perspective: 1000px;
+            position: relative;
+            cursor: pointer;
+            z-index: 1; /* 카드 앞부분 */
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transform-origin: center;
+            transition: transform 0.6s ease, box-shadow 0.6s ease;
+            border-radius: 8px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .card:hover {
+            cursor: url('small2.png'), auto;
+        }
+
+        .overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            filter: brightness(1.1) opacity(0);
+            mix-blend-mode: color-dodge;
+            transition: all 0.1s;
+        }
+
+        .card .front {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            backface-visibility: hidden;
+            transform: rotateY(180deg);
+        }
+
+        .card .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: url('back.jpg'); /* 기본 이미지 */
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            backface-visibility: hidden;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+            box-shadow: 0 0 30px 10px rgba(255, 255, 100, 0.8);
+        }
+
+        .text {
+            font-size: 18px;
+            color: white;
+            width: 250px;
+            white-space: pre-wrap;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            position: absolute;
+            top: 50%;
+            left: 70%;
+            transform: translateY(-50%);
+            z-index: 2; /* 텍스트가 카드 앞에 오도록 설정 */
+        }
+
+        /* 네잎클로버 애니메이션 */
+        .clover {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: fall 3s ease-in, bounce 0.5s ease-out 2.5s, roll 2s linear 3s infinite;
+            z-index: 0; /* 네잎클로버를 카드와 텍스트 뒤로 배치 */
+        }
+
+        .clover .leaf {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #00ff00;
+            border-radius: 50%;
+        }
+
+        .clover .leaf:nth-child(1) {
+            top: 0;
+            left: 5px;
+        }
+
+        .clover .leaf:nth-child(2) {
+            top: 5px;
+            left: 10px;
+            transform: rotate(90deg);
+        }
+
+        .clover .leaf:nth-child(3) {
+            top: 10px;
+            left: 5px;
+            transform: rotate(180deg);
+        }
+
+        .clover .leaf:nth-child(4) {
+            top: 5px;
+            left: 0;
+            transform: rotate(270deg);
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100vh); /* 화면 위로부터 떨어지도록 설정 */
+            }
+            100% {
+                transform: translateY(calc(100vh - 40px)); /* 화면 맨 아래로 떨어지도록 설정 (40px 여유) */
+            }
+        }
+
+        @keyframes bounce {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-15px); /* 살짝 튕기는 애니메이션 */
+            }
+            100% {
+                transform: translateY(0); /* 다시 바닥으로 떨어짐 */
+            }
+        }
+
+        @keyframes roll {
+            0% {
+                transform: translateX(0) rotate(0deg);
+            }
+            50% {
+                transform: translateX(50px) rotate(180deg); /* 오른쪽으로 굴러가면서 회전 */
+            }
+            100% {
+                transform: translateX(0) rotate(360deg);
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="overlay"></div>
+        <div class="card" id="card">
+            <div class="front" id="frontImage"></div>
+            <div class="back"></div>
+        </div>
+    </div>
+    <div class="text" id="text"></div>
+
+    <script>
+        const container = document.querySelector('.container');
+        const overlay = document.querySelector('.overlay');
+        const card = document.getElementById('card');
+        const frontImage = document.getElementById('frontImage');
+        const textElement = document.getElementById('text');
+        const body = document.body;
+
+        let isFlipped = false;
+        const textToType = [
+            "축하드립니다! 이 카드는 무시무시한 주술을 가진 카드입니다. 당신에게는 행운, 누군가에게 불운을 가져다 줍니다. 마음 속에 싫어하는 사람이 있나요? 그 사람은 오늘 코앞에서 지하철을 놓칠 겁니다.",
+            "당신의 운명이 바뀌려는 순간! 이 카드는 그 변화를 암시합니다. 오늘부터 매일 작은 변화가 당신을 더욱 강하게 만들어 줄 것입니다.",
+            "이 카드는 평화와 안정을 가져옵니다. 만약 당신이 갈등을 겪고 있다면, 이 카드를 통해 상황이 풀릴 것입니다.",
+            "지금 당신은 새로운 시작의 문턱에 있습니다. 이 카드는 당신의 용기와 결단력을 칭찬하며, 큰 성공이 기다리고 있음을 알려줍니다."
+        ];
+
+        const frontImages = [
+            { url: 'T12.jpg', text: textToType[0], bgColor: '#9ff781' },
+            { url: 'T2.jpg', text: textToType[1], bgColor: '#61380B' },
+            { url: 'T3.jpg', text: textToType[2], bgColor: '#F5A9BC' },
+            { url: 'T4.jpg', text: textToType[3], bgColor: '#F78181' },
+            { url: 'T5.jpg', text: textToType[4], bgColor: '#BE81F7' },
+            { url: 'T6.jpg', text: textToType[5], bgColor: '#5882FA' },
+            { url: 'T7.jpg', text: textToType[6], bgColor: '#424242' },
+        ];
+
+        // 랜덤 이미지와 텍스트, 배경색 설정
+        function setRandomFrontImage() {
+            const randomIndex = Math.floor(Math.random() * frontImages.length);
+            const selectedImage = frontImages[randomIndex];
+            frontImage.style.backgroundImage = `url(${selectedImage.url})`;
+            textElement.innerHTML = selectedImage.text;
+            body.style.backgroundColor = selectedImage.bgColor;
+        }
+
+        // 네잎클로버 생성
+        function createClover() {
+            const clover = document.createElement('div');
+            clover.className = 'clover';
+            clover.style.left = `${Math.random() * 100}vw`;  // 랜덤으로 X 위치 지정
+
+            for (let i = 0; i < 4; i++) {
+                const leaf = document.createElement('div');
+                leaf.className = 'leaf';
+                clover.appendChild(leaf);
+            }
+
+            body.appendChild(clover);
+
+            // 애니메이션 끝나면 제거
+            setTimeout(() => clover.remove(), 5000);
+        }
+
+        // 카드 클릭 이벤트
+        container.addEventListener('click', function () {
+            isFlipped = !isFlipped;
+
+            if (isFlipped) {
+                setRandomFrontImage(); // 카드를 뒤집었을 때 랜덤 이미지와 배경색 설정
+                card.classList.add('flipped');
+
+                // 네잎클로버 생성
+                for (let i = 0; i < 15; i++) {
+                    setTimeout(createClover, i * 200);
+                }
+
+                textElement.style.opacity = 1; // 텍스트 보이기
+            } else {
+                card.classList.remove('flipped');
+                body.style.backgroundColor = "#1a1a1a"; // 기본 배경색
+                textElement.style.opacity = 0; // 텍스트 숨기기
+            }
+        });
+
+        // 마우스 따라오는 원근감 효과
+        container.addEventListener('mousemove', function (e) {
+            const x = e.offsetX;
+            const y = e.offsetY;
+            const rotateY = -1 / 5 * x + 20;
+            const rotateX = 4 / 30 * y - 20;
+
+            overlay.style.backgroundPosition = `${x / 5 + y / 5}%`;
+            overlay.style.filter = `opacity(${x / 200 + 0.5}) brightness(1.2)`;
+
+            container.style.transform = `perspective(350px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+
+        container.addEventListener('mouseout', function () {
+            overlay.style.filter = 'opacity(0)';
+            container.style.transform = 'perspective(350px) rotateY(0deg) rotateX(0deg)';
+        });
+    </script>
+</body>
+</html>

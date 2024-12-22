@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Tarot</title>
+    <style>
+        @font-face {
+            font-family: 'ChangwonDangamAsacBold';
+            src: url('./창원단감아삭_bold.ttf') format('truetype');
+        }
+
+        /* 모든 요소에서 기본 커서를 설정 */
+        * {
+            cursor: url('small.png'), auto;
+        }
+
+        body {
+            background-color: #1b632d;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .text-container {
+            position: absolute;
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .letter-img {
+            width: 50px; /* 각 글자 이미지 크기 */
+            height: auto;
+            opacity: 0;
+            animation: appear 0.7s ease forwards;
+        }
+
+        @keyframes appear {
+            0% { opacity: 0; transform: translateY(-20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 220px;
+            height: 310px;
+            perspective: 280px;
+        }
+
+        .card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 
+                0 10px 10px rgba(0, 0, 0, 0.12),
+                0 20px 20px rgba(0, 0, 0, 0.15),
+                0 8px 16px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px) rotateY(-30deg) rotateX(5deg);
+            transition: transform 2s ease, opacity 2.2s ease;
+        }
+
+        .card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0) rotateY(0deg) rotateX(5deg) rotateZ(var(--tilt)) translateX(var(--x-offset)) translateY(var(--y-offset));
+        }
+
+        .card.disappear {
+            opacity: 0;
+            transform: translateY(300px);
+            transition: transform 1.8s ease, opacity 1.5s ease;
+        }
+
+        .card.reappear {
+            opacity: 1;
+            transform: translateY(0);
+            transition: transform 2s ease, opacity 1.5s ease;
+        }
+
+        @keyframes circularMotion {
+            0% { transform: rotate(0deg) translate(200px) rotate(0deg); }
+            100% { transform: rotate(360deg) translate(200px) rotate(-360deg); }
+        }
+
+        .card.circle {
+            animation: circularMotion 2s ease forwards;
+        }
+
+        .start-button {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border: 1px solid white;
+            background-color: rgb(80, 152, 106);
+            color: white;
+            font-family: 'ChangwonDangamAsacBold', sans-serif;
+            font-size: 16px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        /* 버튼에서만 커서 변경 */
+        .start-button:hover {
+            box-shadow: 0 0 10px 4px rgba(255, 255, 255, 0.6);
+            cursor: url('small2.png'), auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="text-container" id="text-container">
+        <img src="88.png" alt="L" class="letter-img" style="animation-delay: 0s;">
+        <img src="99.png" alt="u" class="letter-img" style="animation-delay: 0.2s;">
+        <img src="1010.png" alt="c" class="letter-img" style="animation-delay: 0.4s;">
+        <img src="1111.png" alt="k" class="letter-img" style="animation-delay: 0.6s;">
+        <img src="1212.png" alt="y" class="letter-img" style="animation-delay: 0.8s;">
+        <img src="1313.png" alt="T" class="letter-img" style="animation-delay: 1s;">
+        <img src="1414.png" alt="a" class="letter-img" style="animation-delay: 1.2s;">
+        <img src="1515.png" alt="r" class="letter-img" style="animation-delay: 1.4s;">
+        <img src="1616.png" alt="o" class="letter-img" style="animation-delay: 1.6s;">
+        <img src="1717.png" alt="t" class="letter-img" style="animation-delay: 1.8s;">
+    </div>
+
+    <div class="card-container">
+        <div class="card" style="--tilt: -2deg; --x-offset: -5px; --y-offset: -3px;"><img src="T12.jpg" alt="Card 1"></div>
+        <div class="card" style="--tilt: -1.5deg; --x-offset: -3px; --y-offset: -1px;"><img src="T2.jpg" alt="Card 2"></div>
+        <div class="card" style="--tilt: -1deg; --x-offset: -1px; --y-offset: 1px;"><img src="T3.jpg" alt="Card 3"></div>
+        <div class="card" style="--tilt: -0.5deg; --x-offset: 1px; --y-offset: 3px;"><img src="T6.jpg" alt="Card 4"></div>
+        <div class="card" style="--tilt: 0deg; --x-offset: 3px; --y-offset: 5px;"><img src="T4.jpg" alt="Card 5"></div>
+        <div class="card" style="--tilt: 0.5deg; --x-offset: 5px; --y-offset: 3px;"><img src="T5.jpg" alt="Card 6"></div>
+        <div class="card" style="--tilt: 1deg; --x-offset: 7px; --y-offset: 1px;"><img src="T7.jpg" alt="Card 7"></div>
+    </div>
+
+    <button class="start-button" onclick="location.href='proto tarot card select.html';">Lucky Start</button>
+
+    <script>
+        const letters = document.querySelectorAll('.letter-img');
+        letters.forEach((img, index) => {
+            img.style.animationDelay = `${index * 0.2}s`;
+        });
+
+        const cardContainer = document.querySelector('.card-container');
+        const cards = Array.from(document.querySelectorAll('.card'));
+        let currentCard = 0;
+
+        function showNextCard() {
+            if (currentCard < cards.length) {
+                cards[currentCard].classList.add('visible');
+                currentCard++;
+                setTimeout(showNextCard, 400);
+            } else {
+                currentCard = cards.length - 1;
+                setTimeout(rotateCards, 1000);
+            }
+        }
+
+        function rotateCards() {
+            if (currentCard >= 0) {
+                cards[currentCard].classList.add('circle');
+                setTimeout(() => {
+                    cards[currentCard].classList.remove('circle');
+                    cardContainer.appendChild(cards[currentCard]);
+                    currentCard--;
+                    rotateCards();
+                }, 1500);
+            } else {
+                currentCard = 0;
+                setTimeout(moveCardsDown, 1000);
+            }
+        }
+
+        function moveCardsDown() {
+            cards.forEach(card => {
+                card.classList.remove('visible');
+                card.classList.add('disappear');
+            });
+            setTimeout(moveCardsUp, 1800);
+        }
+
+        function moveCardsUp() {
+            cards.forEach((card, index) => {
+                card.classList.remove('disappear');
+                card.classList.add('reappear');
+                cardContainer.appendChild(card);
+            });
+            setTimeout(() => {
+                cards.forEach(card => card.classList.remove('reappear'));
+                showNextCard();
+            }, 1800);
+        }
+
+        showNextCard();
+    </script>
+
+</body>
+</html>
